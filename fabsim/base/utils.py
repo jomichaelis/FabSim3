@@ -145,22 +145,34 @@ class OpenVPNContext(object):
     def __init__(self, env):
         self._config = None
         self._auth_user_pass = None
-        path_err_msg = 'The value of X for this machine is not a valid file.'
-        if hasattr(env, "openvpn_config"):
-            self._config = env.openvpn_config
+        path_err_msg = 'The value of "X" for this machine '
+        env_key_config = 'openvpn_config'
+        if hasattr(env, env_key_config):
+            self._config = env[env_key_config]
             if not Path(self._config).is_file():
-                print(path_err_msg.replace('X', self._config), file=sys.stderr)
+                print(path_err_msg.replace('X', env_key_config) + "is not a valid file.", file=sys.stderr)
                 exit(1)
         env_key_auth = 'openvpn_auth_user_pass'
         if hasattr(env, env_key_auth):
             self._auth_user_pass = env[env_key_auth]
-            if not isinstance(self._auth_user_pass, bool) or \
-                (isinstance(self._auth_user_pass, str) and
-                    not Path(self._auth_user_pass).is_file()):
-                print(path_err_msg.replace(
-                    'X', self._auth_user_pass)[:-1] + ' or boolean.',
-                    file=sys.stderr)
+            if type(self._auth_user_pass) not in [bool, str]:
+                print(path_err_msg.replace('X', env_key_auth) + "must be a boolean or a string.", file=sys.stderr)
                 exit(1)
+            if isinstance(self._auth_user_pass, bool):
+                if not self._auth_user_pass:
+                    print(path_err_msg.replace('X', env_key_auth) + "is set to false. Please set it to true or a filepath.", file=sys.stderr)
+                    exit(1)
+            if isinstance(self._auth_user_pass, str):
+                if not Path(self._auth_user_pass).is_file():
+                    print(path_err_msg.replace('X', env_key_auth) + "is not a valid file.", file=sys.stderr)
+                    exit(1)
+                with open(self._auth_user_pass, 'r') as f:
+                    lines = f.readlines()
+                    if len(lines) != 2:
+                        print(f'File {self._auth_user_pass} must contain exactly two lines.', file=sys.stderr)
+                        exit(1)
+                    for i, auth_key in enumerate(OpenVPNContext._AUTH_ENV_VARS):
+                        os.environ[auth_key] = lines[i].strip()
             if len(set(OpenVPNContext._AUTH_ENV_VARS)
                    .intersection(os.environ)) != 2:
                 print(' and '.join(OpenVPNContext._AUTH_ENV_VARS) +
