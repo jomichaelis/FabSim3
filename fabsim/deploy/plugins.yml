@@ -44,9 +44,6 @@ FabCovidsim:
 
 FabAlya:
   repository: https://github.com/alfonsostg/FabAlya
-
-FabMPS:
-  repository: https://github.com/goghino/FabMPS.git
   
 FabNEPTUNE:
   repository: https://github.com/UCL-CCS/FabNEPTUNE
