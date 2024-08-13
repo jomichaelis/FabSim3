@@ -5,7 +5,7 @@ default:
   nb_process: 1
   venv: false
   module_load_at_connect: true
-  cores: 4
+  cores: 1
   run_prefix_commands: []
   home_path_template: /home/$username
   fabric_dir: FabSim
@@ -507,3 +507,14 @@ piz_daint:
   remote: daint.cscs.ch
 monsoonfab:
   remote: “monsoonfab”
+hsuper:
+  remote: "hsuper-login01.hsu-hh.de"
+  corespernode: 72
+  partition_name: "small"
+  batch_header: "slurm-hsuper"
+  job_dispatch: "sbatch"
+  cancel_job_command: "scancel $jobID"
+  job_wall_time: "0-0:10:00"
+  job_info_command: "squeue --jobs $jobID"
+  stat: "squeue -u $username --Format=jobid,state,account,timeleft,timeused,username --noheader"
+  job_name_template: '${config}_${machine_name}_${cores}_${task}'
